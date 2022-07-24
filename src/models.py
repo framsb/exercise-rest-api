@@ -9,6 +9,7 @@ class User(db.Model):
     is_active = db.Column(db.Boolean(), unique=False, nullable=False)
     username = db.Column(db.String(50), unique=True, nullable=False)
     favorite_character = db.relationship('Favorite_Character', lazy=True)
+    favorite_planet = db.relationship('Favorite_Planet', lazy=True)
 
     def __repr__(self):
         return '<User %r>' % self.username
@@ -72,4 +73,16 @@ class Favorite_Character(db.Model):
             "id": self.id,
             "userid": self.userid,
             "characterid": self.characterid,
+        }
+class Favorite_Planet(db.Model):
+    __tablename__="favorite_planet"
+    id = db.Column(db.Integer, primary_key=True)
+    userid = db.Column(db.Integer, db.ForeignKey('user.id'))
+    planetsid = db.Column(db.Integer, db.ForeignKey('planets.id'))
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "userid": self.userid,
+            "planetsid": self.planetsid,
         }

@@ -9,7 +9,7 @@ from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
-from models import db, User, Planets, Characters, Favorite_Character
+from models import db, User, Planets, Characters, Favorite_Character, Favorite_Planet
 import requests
 #from models import Person
 
@@ -107,6 +107,31 @@ def handle_favorite(userid,characterid):
             db.session.commit()
             return "Eliminated", 200
         
+@app.route('/users/<int:userid>/favorite_planet', methods=['GET'])
+def handle_Favorite_p(userid):
+    user_favorites = Favorite_Planet.query.filter_by(userid= userid)
+    all_favorites = list(map(lambda x: x.serialize(), user_favorites))
+    return jsonify(all_favorites)
+
+@app.route('/users/<int:userid>/favorite_planet/<int:planetid>', methods=['POST','DELETE'])
+def handle_favavorite_planet(userid,planetid):
+    user = User.query.get(userid)
+    if user is None:
+        return "Not Found"
+    if request.method == 'POST':
+        FavPlanet = Favorite_Planet(userid = userid , planetid = planetid)
+        db.session.add(FavPlanet)
+        db.session.commit()
+        return jsonify(FavPlanet.serialize()), 201
+    else:
+        FavDelete = Favorite_Planet.query.filter_by(userid = userid ,planetid=planetid).one_or_none()
+        if FavDelete is None:
+                return('not found in data base')
+        else:
+            db.session.delete(FavDelete)
+            db.session.commit()
+            return "Eliminated", 200
+    
 # this only runs if `$ python src/main.py` is executed
 if __name__ == '__main__':
     PORT = int(os.environ.get('PORT', 3000))
